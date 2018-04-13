@@ -38,10 +38,10 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
 
 	if ( is_array($result) && $result['success'] === 1 ) {
 		if ( ( $result['ip']['appears'] === 1 )  && ( $result['ip']['confidence'] > $confidenceThreshold ) ) {
-			$reg_errors->addError('no_guests');
+			$reg_errors->addError('not_guests');
 		}
 		if ( ( $result['username']['appears'] === 1 )  && ( $result['username']['confidence'] > $confidenceThreshold ) ) {
-			$reg_errors->addError('no_guests');
+			$reg_errors->addError('not_guests');
 		}
 		if ( ( $result['email']['appears'] === 1 )  && ( $result['email']['confidence'] > $confidenceThreshold ) ) {
 			$reg_errors->addError('bad_email');
