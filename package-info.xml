@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!DOCTYPE package-info SYSTEM "http://www.elkarte.net/site/package-info">
+<package-info xmlns="http://www.elkarte.net/site/package-info" xmlns:elk="http://www.elkarte.net/">
+	<id>tinoest:ElkStopSpammer</id>
+	<name>Elkarte Stop Spammer</name>
+	<version>1.0.0</version>
+	<type>addon</type>
+	<license><![CDATA[
+/**
+ * Stop Spammer
+ *
+ * @author tinoest
+ * @license BSD-3
+ *
+ * @version 1.0.0
+ */
+]]></license>
+	<install for="1.1 - 1.1.99">
+		<license type="inline">This Elkarte addon is released under a BSD-3-Clause license.</license>
+		<require-file name="StopSpammer.integration.php" destination="SOURCEDIR" />
+		<hook hook="integrate_register_check" file="SOURCEDIR/StopSpammer.integration.php" function="int_stopSpammer" />
+	</install>
+
+	<uninstall for="1.1 - 1.1.99">
+		<hook reverse="true" hook="integrate_register_check" file="SOURCEDIR/StopSpammer.integration.php" function="int_stopSpammer" />
+		<remove-file name="SOURCEDIR/StopSpammer.integration.php" />
+	</uninstall>
+</package-info>
