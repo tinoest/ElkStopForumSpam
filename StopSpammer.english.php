@@ -2,7 +2,7 @@
 
 // Settings
 $txt['stopspammer_enabled'] = 'Enable the StopSpammer Addon';
-$txt['stopspammer_enabled_desc'] = '<strong>StopSpammer</strong>';
+$txt['stopspammer_enabled_desc'] = '<strong>Stop Forum Spam</strong> is a free service that records reports of spam on forums, blogs and wikis to name a few.';
 $txt['stopspammer_title'] = 'StopSpammer';
 $txt['stopspammer_settings'] = 'StopSpammer Settings';
 $txt['stopspammer_desc'] = 'This addon adds the Stop Spammer check on registration.';
