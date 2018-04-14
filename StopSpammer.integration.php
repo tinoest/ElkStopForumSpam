@@ -37,13 +37,13 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
 
 	$url    = 'https://api.stopforumspam.org/api';
 	$data	= '?';
-	if($modSettings['stopspammer_ip_check']) {
+	if(!empty($modSettings['stopspammer_ip_check'])) {
 		$data   .= 'ip='.$regOptions['ip'].'&';
 	}
-	if($modSettings['stopspammer_username_check']) {
+	if(!empty($modSettings['stopspammer_username_check'])) {
 		$data	.= 'username=' . urlencode($regOptions['username']).'&';
 	}
-	if($modSettings['stopspammer_email_check']) {
+	if(!empty($modSettings['stopspammer_email_check'])) {
 		$data	.= 'email=' . urlencode($regOptions['email']).'&';
 	}
 	$data	.= 'json';
