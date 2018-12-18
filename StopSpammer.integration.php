@@ -75,12 +75,34 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
     }
  
     if($modSettings['projecthoneypot_enabled'] && !empty($modSettings['projecthoneypot_key'])) {
-        $response = explode( ".", gethostbyname($modSettings['projecthoneypot_key'].".".implode(".", array_reverse(explode(".", $regOptions['ip']))).".dnsbl.httpbl.org" ) ); 
-        if ($resonse != null && count($response) > 0) {
-            $reg_errors->addError('not_guests');
-        }
-    }   
-    
+        $results = explode( ".", gethostbyname($modSettings['projecthoneypot_key'].".".implode(".", array_reverse(explode(".", $regOptions['ip']))).".dnsbl.httpbl.org" ) ); 
+        if ($results != null && count($results) && isset($results[0]['ip'])) {
+            $results = explode('.', $results[0]['ip']);
+            if ($results[0] == 127) {
+                $categories = array (
+                    0 => 'Search Engine',
+                    1 => 'Suspicious',
+                    2 => 'Harvester',
+                    3 => 'Suspicious,Harvester',
+                    4 => 'Comment Spammer',
+                    5 => 'Suspicious,Comment Spammer',
+                    6 => 'Harvester,Comment Spammer',
+                    7 => 'Suspicious,Harvester,Comment Spammer',
+                );
+
+                $results = array (
+                    'last_activity' => $results[1],
+                    'threat_score'  => $results[2],
+                    'categories'    => $categories[$results[3]],
+                );
+
+                if($results['threat_score'] > $confidenceThreshold) {
+                    $reg_errors->addError('not_guests');
+                }
+            }
+        }   
+    }
+
 	return;
 
 }
@@ -97,13 +119,15 @@ function int_adminAreasStopSpammer(&$admin_areas)
 {
 	global $txt;
 	loadLanguage('StopSpammer');
-	$admin_areas['config']['areas']['addonsettings']['subsections']['stopspammer'] = array($txt['stopspammer_title']);
+
+    $admin_areas['config']['areas']['securitysettings']['subsections']['stopspammer'] = array ( 0 => $txt['stopspammer_title']);
+    
 }
 
 /**
  * int_adminStopSpammer()
  *
- * - Admin Hook, integrate_sa_modify_modifications, called from AddonSettings.controller.php
+ * - Admin Hook, integrate_sa_modify_security, called from ManageSecurity.controller.php
  * - Used to add subactions to the addon area
  *
  * @param mixed[] $sub_actions
@@ -117,8 +141,10 @@ function int_adminStopSpammer(&$sub_actions)
 		'function' => 'stopspammer_settings',
 		'permission' => 'admin_forum',
 	);
+
 	$context[$context['admin_menu_name']]['tab_data']['tabs']['stopspammer']['description'] = $txt['stopspammer_desc'];
 }
+
 /**
  * stopspammer_settings()
  *
@@ -142,6 +168,9 @@ function stopspammer_settings()
 		array('int', 'stopspammer_threshold'),
 		array('title', 'spamhaus_options'),
 		array('check', 'spamhaus_enabled', 'postinput' => $txt['spamhaus_enabled_desc']),
+		array('title', 'projecthoneypot_options'),
+		array('check', 'projecthoneypot_enabled', 'postinput' => $txt['projecthoneypot_enabled_desc']),
+		array('text', 'projecthoneypot_key'),
 	);
 	// Load the settings to the form class
 	$stopSpammerSettings->settings($config_vars);
@@ -150,12 +179,12 @@ function stopspammer_settings()
 	{
 		checkSession();
 		Settings_Form::save_db($config_vars);
-		redirectexit('action=admin;area=addonsettings;sa=stopspammer');
+		redirectexit('action=admin;area=securitysettings;sa=stopspammer');
 	}
 	// Continue on to the settings template
 	$context['settings_title'] = $txt['stopspammer_title'];
 	$context['page_title'] = $context['settings_title'] = $txt['stopspammer_settings'];
-	$context['post_url'] = $scripturl . '?action=admin;area=addonsettings;sa=stopspammer;save';
+	$context['post_url'] = $scripturl . '?action=admin;area=securitysettings;sa=stopspammer;save';
 	Settings_Form::prepare_db($config_vars);
 }
 
