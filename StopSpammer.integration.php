@@ -22,48 +22,65 @@ if (!defined('ELK'))
 function int_stopSpammer(&$regOptions, &$reg_errors)
 {
 	global $modSettings;
+        
+    require_once(SUBSDIR . '/Package.subs.php');
 
-	// If its not enabled the just exit early
-	if(!$modSettings['stopspammer_enabled']) {
-		return;
-	}
+    if($modSettings['stopspammer_enabled']) {
+        if(isset($modSettings['stopspammer_threshold'])) {
+            $confidenceThreshold = $modSettings['stopspammer_threshold'];
+        }
+        else {
+            $confidenceThreshold = 50;
+        }
 
-	if(isset($modSettings['stopspammer_threshold'])) {
-		$confidenceThreshold = $modSettings['stopspammer_threshold'];
-	}
-	else {
-		$confidenceThreshold = 50;
-	}
+        $url    = 'https://api.stopforumspam.org/api';
+        $data	= '?';
+        if(!empty($modSettings['stopspammer_ip_check'])) {
+            $data   .= 'ip='.$regOptions['ip'].'&';
+        }
+        if(!empty($modSettings['stopspammer_username_check'])) {
+            $data	.= 'username=' . urlencode($regOptions['username']).'&';
+        }
+        if(!empty($modSettings['stopspammer_email_check'])) {
+            $data	.= 'email=' . urlencode($regOptions['email']).'&';
+        }
+        $data	.= 'json';
 
-	$url    = 'https://api.stopforumspam.org/api';
-	$data	= '?';
-	if(!empty($modSettings['stopspammer_ip_check'])) {
-		$data   .= 'ip='.$regOptions['ip'].'&';
-	}
-	if(!empty($modSettings['stopspammer_username_check'])) {
-		$data	.= 'username=' . urlencode($regOptions['username']).'&';
-	}
-	if(!empty($modSettings['stopspammer_email_check'])) {
-		$data	.= 'email=' . urlencode($regOptions['email']).'&';
-	}
-	$data	.= 'json';
+        $result	= fetch_web_data($url.$data);
+        $result = json_decode($result, true);
 
-	require_once(SUBSDIR . '/Package.subs.php');
-	$result	= fetch_web_data($url.$data);
-	$result = json_decode($result, true);
+        if ( is_array($result) && $result['success'] === 1 ) {
+            if ( ( $result['ip']['appears'] === 1 )  && ( $result['ip']['confidence'] > $confidenceThreshold ) ) {
+                $reg_errors->addError('not_guests');
+            }
+            if ( ( $result['username']['appears'] === 1 )  && ( $result['username']['confidence'] > $confidenceThreshold ) ) {
+                $reg_errors->addError('not_guests');
+            }
+            if ( ( $result['email']['appears'] === 1 )  && ( $result['email']['confidence'] > $confidenceThreshold ) ) {
+                $reg_errors->addError('bad_email');
+            }
+        }
+    }
 
-	if ( is_array($result) && $result['success'] === 1 ) {
-		if ( ( $result['ip']['appears'] === 1 )  && ( $result['ip']['confidence'] > $confidenceThreshold ) ) {
-			$reg_errors->addError('not_guests');
-		}
-		if ( ( $result['username']['appears'] === 1 )  && ( $result['username']['confidence'] > $confidenceThreshold ) ) {
-			$reg_errors->addError('not_guests');
-		}
-		if ( ( $result['email']['appears'] === 1 )  && ( $result['email']['confidence'] > $confidenceThreshold ) ) {
-			$reg_errors->addError('bad_email');
-		}
-	}
-
+    if($modSettings['spamhaus_enabled']) {
+        $revip  = implode(".", array_reverse(explode(".", $regOptions['ip'], 4), false));
+        $dns    = dns_get_record($revip . ".zen.spamhaus.org");
+        if ($dns != null && count($dns) > 0) {
+            foreach ($dns as $entry) {
+                if (in_array($entry['ip'], array('127.0.0.2', '127.0.0.3', '127.0.0.4'))) {
+                    $reg_errors->addError('not_guests');
+                }
+            }
+        }
+    }
+ 
+    if($modSettings['projecthoneypot_enabled'] && !empty($modSettings['projecthoneypot_key'])) {
+        $response = explode( ".", gethostbyname($modSettings['projecthoneypot_key'].".".implode(".", array_reverse(explode(".", $regOptions['ip']))).".dnsbl.httpbl.org" ) ); 
+        if ($resonse != null && count($response) > 0) {
+            $reg_errors->addError('not_guests');
+        }
+    }   
+    
 	return;
 
 }
@@ -118,12 +135,13 @@ function stopspammer_settings()
 	// All the options, well at least some of them!
 	$config_vars = array(
 		array('check', 'stopspammer_enabled', 'postinput' => $txt['stopspammer_enabled_desc']),
-		// Transition effects and speed
 		array('title', 'stopspammer_options'),
 		array('check', 'stopspammer_ip_check'),
 		array('check', 'stopspammer_email_check'),
 		array('check', 'stopspammer_username_check'),
 		array('int', 'stopspammer_threshold'),
+		array('title', 'spamhaus_options'),
+		array('check', 'spamhaus_enabled', 'postinput' => $txt['spamhaus_enabled_desc']),
 	);
 	// Load the settings to the form class
 	$stopSpammerSettings->settings($config_vars);
@@ -139,6 +157,44 @@ function stopspammer_settings()
 	$context['page_title'] = $context['settings_title'] = $txt['stopspammer_settings'];
 	$context['post_url'] = $scripturl . '?action=admin;area=addonsettings;sa=stopspammer;save';
 	Settings_Form::prepare_db($config_vars);
+}
+
+function int_memberListStopSpammer()
+{
+	global $context;
+
+	if(allowedTo('admin_forum')) {
+		$context['columns']['is_spammer'] = array ( 
+			'label' 		=> 'Spammer' , 
+			'class'			=> 'is_spammer',
+			'default_sort_rev' 	=> 'true',
+			'sort'			=> array ( 
+				'down' 	=> 'mem.is_spammer DESC',
+				'up'	=> 'mem.is_spammer ASC'
+			),
+		);
+	}
+}
+
+function int_loadMemberDataStopSpammer(&$select_columns, &$select_tables, $set)
+{
+	if(allowedTo('admin_forum')) {
+		$select_columns .= ', mem.is_spammer AS is_spammer';
+	}
+}
+
+function int_memberContextStopSpammer($user, $custom_fields)
+{
+	global $memberContext, $user_profile;
+
+	if(allowedTo('admin_forum')) {
+		if($user_profile[$user]['is_spammer'] == 0) {
+			$memberContext[$user]['is_spammer'] = '<i class="icon i-hand-up"></i>';
+		}
+		else {
+			$memberContext[$user]['is_spammer'] = '<i class="icon i-check"></i>';
+		}
+	}
 }
 
 
