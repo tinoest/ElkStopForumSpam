@@ -25,6 +25,7 @@
 		<hook hook="integrate_register_check" file="SOURCEDIR/StopSpammer.integration.php" function="int_stopSpammer" />
 		<hook hook="integrate_admin_areas" file="SOURCEDIR/StopSpammer.integration.php" function="int_adminAreasStopSpammer" />
 		<hook hook="integrate_sa_modify_security" file="SOURCEDIR/StopSpammer.integration.php" function="int_adminStopSpammer" />
+		<hook hook="integrate_list_member_list" file="SOURCEDIR/StopSpammer.integration.php" function="int_listStopSpammer" />
 		<code>database.php</code>
 	</install>
 
@@ -35,6 +36,7 @@
 		<hook reverse="true" hook="integrate_register_check" file="SOURCEDIR/StopSpammer.integration.php" function="int_stopSpammer" />
 		<hook reverse="true" hook="integrate_admin_areas" file="SOURCEDIR/StopSpammer.integration.php" function="int_adminAreasStopSpammer" />
 		<hook reverse="true" hook="integrate_sa_modify_security" file="SOURCEDIR/StopSpammer.integration.php" function="int_adminStopSpammer" />
+		<hook reverse="true" hook="integrate_list_member_list" file="SOURCEDIR/StopSpammer.integration.php" function="int_listStopSpammer" />
 		<remove-file name="SOURCEDIR/StopSpammer.integration.php" />
 		<remove-file name="LANGUAGEDIR/english/StopSpammer.english.php" />
 		<code>database.php</code>

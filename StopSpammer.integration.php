@@ -146,6 +146,36 @@ function int_adminStopSpammer(&$sub_actions)
 }
 
 /**
+ * int_adminStopSpammer()
+ *
+ * - Admin Hook, integrate_list_member_list, called from subs.php
+ * - Used to add subactions to a list
+ *
+ * @param mixed[] $listOptions
+ */
+function int_listStopSpammer(&$listOptions)
+{
+   
+    $listOptions['columns'] = array_merge($listOptions['columns'],
+        array (
+            'is_spammer' => array(
+                'header' => array(
+                    'value' => 'Spammer',
+                ),
+                'data' => array(
+                    'db' => 'is_spammer',
+                ),
+                'sort' => array(
+                    'default' => 'is_spammer',
+                    'reverse' => 'is_spammer DESC',
+                ),
+            ),
+        )
+    );
+
+}
+
+/**
  * stopspammer_settings()
  *
  * - Defines our settings array and uses our settings class to manage the data
