@@ -23,11 +23,19 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
 {
 	global $modSettings;
         
-    require_once(SUBSDIR . '/Package.subs.php');
+    // No point running if disabled
+    if(empty($modSettings['stopspammer_enabled'])) {
+        return;
+    }
+    
+    $spammer = false;
 
-    if($modSettings['stopspammer_enabled']) {
-        if(isset($modSettings['stopspammer_threshold'])) {
-            $confidenceThreshold = $modSettings['stopspammer_threshold'];
+    if($modSettings['stopforumspam_enabled']) {
+        // We need this for fetch_web_data
+        require_once(SUBSDIR . '/Package.subs.php');
+
+        if(isset($modSettings['stopforumspam_threshold'])) {
+            $confidenceThreshold = $modSettings['stopforumspam_threshold'];
         }
         else {
             $confidenceThreshold = 50;
@@ -35,13 +43,13 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
 
         $url    = 'https://api.stopforumspam.org/api';
         $data	= '?';
-        if(!empty($modSettings['stopspammer_ip_check'])) {
+        if(!empty($modSettings['stopforumspam_ip_check'])) {
             $data   .= 'ip='.$regOptions['ip'].'&';
         }
-        if(!empty($modSettings['stopspammer_username_check'])) {
+        if(!empty($modSettings['stopforumspam_username_check'])) {
             $data	.= 'username=' . urlencode($regOptions['username']).'&';
         }
-        if(!empty($modSettings['stopspammer_email_check'])) {
+        if(!empty($modSettings['stopforumspam_email_check'])) {
             $data	.= 'email=' . urlencode($regOptions['email']).'&';
         }
         $data	.= 'json';
@@ -51,13 +59,13 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
 
         if ( is_array($result) && $result['success'] === 1 ) {
             if ( ( $result['ip']['appears'] === 1 )  && ( $result['ip']['confidence'] > $confidenceThreshold ) ) {
-                $reg_errors->addError('not_guests');
+                $spammer = true;
             }
             if ( ( $result['username']['appears'] === 1 )  && ( $result['username']['confidence'] > $confidenceThreshold ) ) {
-                $reg_errors->addError('not_guests');
+                $spammer = true;
             }
             if ( ( $result['email']['appears'] === 1 )  && ( $result['email']['confidence'] > $confidenceThreshold ) ) {
-                $reg_errors->addError('bad_email');
+                $spammer = true;
             }
         }
     }
@@ -68,7 +76,7 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
         if ($dns != null && count($dns) > 0) {
             foreach ($dns as $entry) {
                 if (in_array($entry['ip'], array('127.0.0.2', '127.0.0.3', '127.0.0.4'))) {
-                    $reg_errors->addError('not_guests');
+                    $spammer = true;
                 }
             }
         }
@@ -96,11 +104,15 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
                     'categories'    => $categories[$results[3]],
                 );
 
-                if($results['threat_score'] > $confidenceThreshold) {
-                    $reg_errors->addError('not_guests');
+                if($results['threat_score'] > $modSettings['projecthoneypot_threshold']) {
+                    $spammer = true;
                 }
             }
         }   
+    }
+    
+    if($spammer == true && !empty($modSettings['stopspammer_block_register'])) {            
+        $reg_errors->addError('not_guests');
     }
 
 	return;
@@ -155,8 +167,8 @@ function int_adminStopSpammer(&$sub_actions)
  */
 function int_listStopSpammer(&$listOptions)
 {
-   
-    $listOptions['columns'] = array_merge($listOptions['columns'],
+    
+    $listOptions['columns'] = elk_array_insert($listOptions['columns'], 'posts',
         array (
             'is_spammer' => array(
                 'header' => array(
@@ -170,9 +182,44 @@ function int_listStopSpammer(&$listOptions)
                     'reverse' => 'is_spammer DESC',
                 ),
             ),
-        )
+        ), 'after'
     );
 
+    // Override the default call so we can add the is_spammer check to the returned values
+    $listOptions['get_items']['file']       = SOURCEDIR . '/StopSpammer.integration.php';
+    $listOptions['get_items']['function']   = 'int_spammer_getMembers';
+
+}
+
+
+function int_spammer_getMembers($start, $items_per_page, $sort, $where, $where_params = array(), $get_duplicates = false) 
+{
+    $db = database();
+    // Load default call
+    require_once( SUBSDIR . '/Members.subs.php');
+
+    $members = list_getMembers($start, $items_per_page, $sort, $where, $where_params = array(), $get_duplicates = false);
+
+    if(is_array($members) && count($members)) {
+        foreach($members as $k => $member) {
+            $memberSpammer = $db->fetchQuery('
+                SELECT is_spammer 
+                FROM {db_prefix}members AS mem
+                WHERE id_member = {int:id_member}',
+                array (
+                    'id_member' => $member['id_member'],
+                )
+            );
+            if(array_key_exists('0', $memberSpammer) && array_key_exists('is_spammer', $memberSpammer[0])) {
+                $members[$k]['is_spammer'] = $memberSpammer[0]['is_spammer'];
+            }
+            else {
+                $members[$k]['is_spammer'] = 0;
+            }
+        }
+    }
+
+    return $members;
 }
 
 /**
@@ -191,16 +238,20 @@ function stopspammer_settings()
 	// All the options, well at least some of them!
 	$config_vars = array(
 		array('check', 'stopspammer_enabled', 'postinput' => $txt['stopspammer_enabled_desc']),
-		array('title', 'stopspammer_options'),
-		array('check', 'stopspammer_ip_check'),
-		array('check', 'stopspammer_email_check'),
-		array('check', 'stopspammer_username_check'),
-		array('int', 'stopspammer_threshold'),
+		array('check', 'stopspammer_block_register'),
+		array('title', 'stopforumspam_options'),
+		array('check', 'stopforumspam_enabled', 'postinput' => $txt['stopforumspam_enabled_desc']),
+		array('check', 'stopforumspam_ip_check'),
+		array('check', 'stopforumspam_email_check'),
+		array('check', 'stopforumspam_username_check'),
+		array('int', 'stopforumspam_threshold'),
 		array('title', 'spamhaus_options'),
 		array('check', 'spamhaus_enabled', 'postinput' => $txt['spamhaus_enabled_desc']),
 		array('title', 'projecthoneypot_options'),
 		array('check', 'projecthoneypot_enabled', 'postinput' => $txt['projecthoneypot_enabled_desc']),
 		array('text', 'projecthoneypot_key'),
+		array('int', 'projecthoneypot_threshold'),
+		array('int', 'projecthoneypot_history'),
 	);
 	// Load the settings to the form class
 	$stopSpammerSettings->settings($config_vars);
@@ -254,6 +305,7 @@ function int_memberContextStopSpammer($user, $custom_fields)
 			$memberContext[$user]['is_spammer'] = '<i class="icon i-check"></i>';
 		}
 	}
+    
 }
 
 
