@@ -14,14 +14,16 @@ if (!defined('ELK'))
 	die('No access...');
 }
 
+$spammer = false;
+
 /**
- * integrate_register hook
+ * integrate_register_check hook
  *
  * - Used to check the user against the stop spammer database on registration
  */
 function int_stopSpammer(&$regOptions, &$reg_errors)
 {
-	global $modSettings;
+	global $modSettings, $spammer;
         
     // No point running if disabled
     if(empty($modSettings['stopspammer_enabled'])) {
@@ -120,6 +122,43 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
 }
 
 /**
+ * integrate_register hook
+ *
+ * - Used to add the check to the database on registration
+ */
+function int_registerStopSpammer(&$regOptions, &$theme_vars, &$knownInts, &$knownFloats)
+{
+    global $spammer;
+
+    $knownInts[] = 'is_spammer';
+    if($spammer == true) {
+        $regOptions['register_vars']['is_spammer'] = 1;
+    }
+    else {
+        $regOptions['register_vars']['is_spammer'] = 0;
+    }
+
+}
+
+
+/**
+ * int_actionStopSpammer()
+ *
+ * - Action Hook, integrate_actions, called from SiteDispacher.php
+ * - Used to add/modify action list
+ *
+ * @param mixed[] $actionArray
+ * @param mixed[] $adminActions
+ */
+function int_actionsStopSpammer(&$actionArray, &$adminActions)
+{
+
+     
+
+}
+
+
+/**
  * int_adminAreasStopSpammer()
  *
  * - Admin Hook, integrate_admin_areas, called from Admin.php
@@ -158,6 +197,39 @@ function int_adminStopSpammer(&$sub_actions)
 }
 
 /**
+ * int_profileStopSpammer()
+ *
+ * - Admin Hook, integrate_profile_areas, called from Members.controller.php
+ * - Used to add subactions to the profile area
+ *
+ * @param mixed[] $profile_areas
+ */
+function int_profileStopSpammer(&$profile_areas)
+{
+
+
+    global $txt, $scripturl, $memID, $modSettings;
+    loadLanguage('StopSpammer');
+
+    $profile_areas['profile_action']['areas'] = elk_array_insert($profile_areas['profile_action']['areas'], 'banuser', array(
+            'checkmember'       => array(
+                'label'         => $txt['stopspammer_check'],
+                'custom_url'    => $scripturl . '?action=stopspammer;sa=checkmember;member_id='.$memID,
+                'enabled'       => !empty($modSettings['stopspammer_enabled']),
+                'sc'            => 'get',
+                'permission'    => array(
+                    'own'   => array('profile_remove_any', 'profile_remove_own'),
+                    'any'   => array('profile_remove_any', 'moderate_forum'),
+                ),
+            )
+        ), 
+        'after'
+    );
+
+}
+
+
+/**
  * int_adminStopSpammer()
  *
  * - Admin Hook, integrate_list_member_list, called from subs.php
@@ -188,7 +260,6 @@ function int_listStopSpammer(&$listOptions)
     // Override the default call so we can add the is_spammer check to the returned values
     $listOptions['get_items']['file']       = SOURCEDIR . '/StopSpammer.integration.php';
     $listOptions['get_items']['function']   = 'int_spammer_getMembers';
-
 }
 
 

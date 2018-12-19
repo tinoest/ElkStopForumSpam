@@ -6,6 +6,7 @@ $txt['stopspammer_enabled']             = 'Enable the Anti Spam Addon';
 $txt['stopspammer_enabled_desc']        = 'Enable a set of Anti Spam Measures on Registration';
 $txt['stopspammer_desc']                = 'This addon adds the Stop Spammer check on registration.';
 $txt['stopspammer_block_register']      = 'Block Registration to the forum if detected as a Spammer';
+$txt['stopspammer_check']               = 'Check user is a spammer';
 
     
 $txt['stopforumspam_enabled']           = 'Enable the Anti Spam Addon';
