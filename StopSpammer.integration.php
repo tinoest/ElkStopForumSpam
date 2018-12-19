@@ -14,8 +14,6 @@ if (!defined('ELK'))
 	die('No access...');
 }
 
-$spammer = false;
-
 /**
  * integrate_register_check hook
  *
@@ -23,8 +21,10 @@ $spammer = false;
  */
 function int_stopSpammer(&$regOptions, &$reg_errors)
 {
-	global $modSettings, $spammer;
+	global $modSettings;
         
+    $regOptions['spammer'] = 0;
+    
     // No point running if disabled
     if(empty($modSettings['stopspammer_enabled'])) {
         return;
@@ -116,6 +116,11 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
     if($spammer == true && !empty($modSettings['stopspammer_block_register'])) {            
         $reg_errors->addError('not_guests');
     }
+    else {
+        $regOptions['spammer']              = 1;
+        $regOptions['require']              = 'approval';
+        $modSettings['registration_method'] = 2;
+    }
 
 	return;
 
@@ -128,15 +133,9 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
  */
 function int_registerStopSpammer(&$regOptions, &$theme_vars, &$knownInts, &$knownFloats)
 {
-    global $spammer;
 
     $knownInts[] = 'is_spammer';
-    if($spammer == true) {
-        $regOptions['register_vars']['is_spammer'] = 1;
-    }
-    else {
-        $regOptions['register_vars']['is_spammer'] = 0;
-    }
+    $regOptions['register_vars']['is_spammer'] = $regOptions['spammer'];
 
 }
 
