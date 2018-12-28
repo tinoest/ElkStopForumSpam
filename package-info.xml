@@ -22,6 +22,7 @@
 		<require-file name="StopSpammer.controller.php" destination="CONTROLLERDIR" />
 		<require-file name="StopSpammer.english.php" destination="LANGUAGEDIR/english">The language strings</require-file>
 		<hook hook="integrate_memberlist_buttons" file="SOURCEDIR/StopSpammer.integration.php" function="int_memberListStopSpammer" />
+		<hook hook="integrate_actions" file="SOURCEDIR/StopSpammer.integration.php" function="int_actionsStopSpammer" />
 		<hook hook="integrate_load_member_data" file="SOURCEDIR/StopSpammer.integration.php" function="int_loadMemberDataStopSpammer" />
 		<hook hook="integrate_member_context" file="SOURCEDIR/StopSpammer.integration.php" function="int_memberContextStopSpammer" />
 		<hook hook="integrate_register_check" file="SOURCEDIR/StopSpammer.integration.php" function="int_stopSpammer" />
@@ -43,6 +44,7 @@
 		<hook reverse="true" hook="integrate_list_member_list" file="SOURCEDIR/StopSpammer.integration.php" function="int_listStopSpammer" />
 		<hook reverse="true" hook="integrate_register" file="SOURCEDIR/StopSpammer.integration.php" function="int_registerStopSpammer" />
 		<hook reverse="true" hook="integrate_profile_areas" file="SOURCEDIR/StopSpammer.integration.php" function="int_profileStopSpammer" />
+		<hook reverse="true" hook="integrate_actions" file="SOURCEDIR/StopSpammer.integration.php" function="int_actionsStopSpammer" />
 		<remove-file name="SOURCEDIR/StopSpammer.integration.php" />
 		<remove-file name="LANGUAGEDIR/english/StopSpammer.english.php" />
 		<remove-file name="SUBSDIR/StopSpammer.subs.php" />

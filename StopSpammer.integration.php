@@ -108,8 +108,15 @@ function int_registerStopSpammer(&$regOptions, &$theme_vars, &$knownInts, &$know
  */
 function int_actionsStopSpammer(&$actionArray, &$adminActions)
 {
+    global $modSettings;
 
-     
+    if(!empty($modSettings['stopspammer_enabled'])) {
+        $actionArray['stopspammer'] = array (
+            'StopSpammer.controller.php',
+            'StopSpammer_Controller',
+            'action_index'
+        );
+    }
 
 }
 
@@ -170,7 +177,7 @@ function int_profileStopSpammer(&$profile_areas)
     $profile_areas['profile_action']['areas'] = elk_array_insert($profile_areas['profile_action']['areas'], 'banuser', array(
             'checkmember'       => array(
                 'label'         => $txt['stopspammer_check'],
-                'custom_url'    => $scripturl . '?action=stopspammer;sa=checkmember;member_id='.$memID,
+                'custom_url'    => $scripturl . '?action=stopspammer;sa=check;member_id='.$memID,
                 'enabled'       => !empty($modSettings['stopspammer_enabled']),
                 'sc'            => 'get',
                 'permission'    => array(

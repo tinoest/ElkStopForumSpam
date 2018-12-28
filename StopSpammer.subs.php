@@ -15,7 +15,7 @@ if (!defined('ELK'))
 }
 
 
-function stopSpammer_stopforumspam_check(&$spammer, $confidenceThreshold = null, $ip = null, $username = null, $email = null)
+function stopSpammerStopforumspamCheck(&$spammer, $confidenceThreshold = null, $ip = null, $username = null, $email = null)
 {
 
     // We need this for fetch_web_data
@@ -65,7 +65,7 @@ function stopSpammer_stopforumspam_check(&$spammer, $confidenceThreshold = null,
 }
 
 
-function stopSpammer_spamhaus_check(&$spammer, $ip = null)
+function stopSpammerSpamhausCheck(&$spammer, $ip = null)
 {    
 
     if(!empty($ip)) {
@@ -82,7 +82,7 @@ function stopSpammer_spamhaus_check(&$spammer, $ip = null)
 
 }
  
-function stopSpammer_projecthoneypot_check(&$spammer, $confidenceThreshold = null, $key = null, $ip = null)
+function stopSpammerProjecthoneypotCheck(&$spammer, $confidenceThreshold = null, $key = null, $ip = null)
 {    
 
     foreach(array('confidenceThreshold', 'key', 'ip') as $v) {
@@ -122,7 +122,7 @@ function stopSpammer_projecthoneypot_check(&$spammer, $confidenceThreshold = nul
 
 }
     
-function stopSpammer_getMembers($start, $items_per_page, $sort, $where, $where_params = array(), $get_duplicates = false) 
+function stopSpammerGetMembers($start, $items_per_page, $sort, $where, $where_params = array(), $get_duplicates = false) 
 {
     $db = database();
     // Load default call
@@ -151,5 +151,14 @@ function stopSpammer_getMembers($start, $items_per_page, $sort, $where, $where_p
 
     return $members;
 }
+
+function stopSpammerCheckUser($user_id)
+{
+
+    // Retrieve user information?
+
+
+}
+
 
 ?>
