@@ -30,11 +30,14 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
         return;
     }
     
+    require_once(SUBSDIR . '/StopSpammer.subs.php');
+    
     $spammer = false;
 
     if($modSettings['stopforumspam_enabled']) {
-        // We need this for fetch_web_data
-        require_once(SUBSDIR . '/Package.subs.php');
+        $ip         = null;
+        $username   = null; 
+        $email      = null;
 
         if(isset($modSettings['stopforumspam_threshold'])) {
             $confidenceThreshold = $modSettings['stopforumspam_threshold'];
@@ -43,74 +46,28 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
             $confidenceThreshold = 50;
         }
 
-        $url    = 'https://api.stopforumspam.org/api';
-        $data	= '?';
         if(!empty($modSettings['stopforumspam_ip_check'])) {
-            $data   .= 'ip='.$regOptions['ip'].'&';
+            $ip         = $regOptions['ip'];
         }
+
         if(!empty($modSettings['stopforumspam_username_check'])) {
-            $data	.= 'username=' . urlencode($regOptions['username']).'&';
+            $username   = $regOptions['username'];
         }
+
         if(!empty($modSettings['stopforumspam_email_check'])) {
-            $data	.= 'email=' . urlencode($regOptions['email']).'&';
+            $email      = $regOptions['email'];
         }
-        $data	.= 'json';
 
-        $result	= fetch_web_data($url.$data);
-        $result = json_decode($result, true);
+        stopSpammer_stopforumspam_check($spammer, $confidenceThreshold, $ip, $username, $email);
 
-        if ( is_array($result) && $result['success'] === 1 ) {
-            if ( ( $result['ip']['appears'] === 1 )  && ( $result['ip']['confidence'] > $confidenceThreshold ) ) {
-                $spammer = true;
-            }
-            if ( ( $result['username']['appears'] === 1 )  && ( $result['username']['confidence'] > $confidenceThreshold ) ) {
-                $spammer = true;
-            }
-            if ( ( $result['email']['appears'] === 1 )  && ( $result['email']['confidence'] > $confidenceThreshold ) ) {
-                $spammer = true;
-            }
-        }
     }
 
     if($modSettings['spamhaus_enabled']) {
-        $revip  = implode(".", array_reverse(explode(".", $regOptions['ip'], 4), false));
-        $dns    = dns_get_record($revip . ".zen.spamhaus.org");
-        if ($dns != null && count($dns) > 0) {
-            foreach ($dns as $entry) {
-                if (in_array($entry['ip'], array('127.0.0.2', '127.0.0.3', '127.0.0.4'))) {
-                    $spammer = true;
-                }
-            }
-        }
+        stopSpammer_spamshaus_check($spammer, $regOptions['ip']);
     }
  
     if($modSettings['projecthoneypot_enabled'] && !empty($modSettings['projecthoneypot_key'])) {
-        $results = explode( ".", gethostbyname($modSettings['projecthoneypot_key'].".".implode(".", array_reverse(explode(".", $regOptions['ip']))).".dnsbl.httpbl.org" ) ); 
-        if ($results != null && count($results) && isset($results[0]['ip'])) {
-            $results = explode('.', $results[0]['ip']);
-            if ($results[0] == 127) {
-                $categories = array (
-                    0 => 'Search Engine',
-                    1 => 'Suspicious',
-                    2 => 'Harvester',
-                    3 => 'Suspicious,Harvester',
-                    4 => 'Comment Spammer',
-                    5 => 'Suspicious,Comment Spammer',
-                    6 => 'Harvester,Comment Spammer',
-                    7 => 'Suspicious,Harvester,Comment Spammer',
-                );
-
-                $results = array (
-                    'last_activity' => $results[1],
-                    'threat_score'  => $results[2],
-                    'categories'    => $categories[$results[3]],
-                );
-
-                if($results['threat_score'] > $modSettings['projecthoneypot_threshold']) {
-                    $spammer = true;
-                }
-            }
-        }   
+        stopSpammer_projecthoneypot_check($spammer, $modSettings['projecthoneypot_threshold'], $modSettings['projecthoneypot_key'], $regOptions['ip']);
     }
     
     if($spammer == true && !empty($modSettings['stopspammer_block_register'])) {            
@@ -257,39 +214,8 @@ function int_listStopSpammer(&$listOptions)
     );
 
     // Override the default call so we can add the is_spammer check to the returned values
-    $listOptions['get_items']['file']       = SOURCEDIR . '/StopSpammer.integration.php';
-    $listOptions['get_items']['function']   = 'int_spammer_getMembers';
-}
-
-
-function int_spammer_getMembers($start, $items_per_page, $sort, $where, $where_params = array(), $get_duplicates = false) 
-{
-    $db = database();
-    // Load default call
-    require_once( SUBSDIR . '/Members.subs.php');
-
-    $members = list_getMembers($start, $items_per_page, $sort, $where, $where_params = array(), $get_duplicates = false);
-
-    if(is_array($members) && count($members)) {
-        foreach($members as $k => $member) {
-            $memberSpammer = $db->fetchQuery('
-                SELECT is_spammer 
-                FROM {db_prefix}members AS mem
-                WHERE id_member = {int:id_member}',
-                array (
-                    'id_member' => $member['id_member'],
-                )
-            );
-            if(array_key_exists('0', $memberSpammer) && array_key_exists('is_spammer', $memberSpammer[0])) {
-                $members[$k]['is_spammer'] = $memberSpammer[0]['is_spammer'];
-            }
-            else {
-                $members[$k]['is_spammer'] = 0;
-            }
-        }
-    }
-
-    return $members;
+    $listOptions['get_items']['file']       = SUBSDIR . '/StopSpammer.subs.php';
+    $listOptions['get_items']['function']   = 'stopSpammer_getMembers';
 }
 
 /**
