@@ -19,6 +19,7 @@
 		<license type="inline">This Elkarte addon is released under a BSD-3-Clause license.</license>
 		<require-file name="StopSpammer.integration.php" destination="SOURCEDIR" />
 		<require-file name="StopSpammer.subs.php" destination="SUBSDIR" />
+		<require-file name="StopSpammer.controller.php" destination="CONTROLLERDIR" />
 		<require-file name="StopSpammer.english.php" destination="LANGUAGEDIR/english">The language strings</require-file>
 		<hook hook="integrate_memberlist_buttons" file="SOURCEDIR/StopSpammer.integration.php" function="int_memberListStopSpammer" />
 		<hook hook="integrate_load_member_data" file="SOURCEDIR/StopSpammer.integration.php" function="int_loadMemberDataStopSpammer" />
@@ -45,6 +46,7 @@
 		<remove-file name="SOURCEDIR/StopSpammer.integration.php" />
 		<remove-file name="LANGUAGEDIR/english/StopSpammer.english.php" />
 		<remove-file name="SUBSDIR/StopSpammer.subs.php" />
+		<remove-file name="CONTROLLERDIR/StopSpammer.controller.php" />
 		<code>database.php</code>
 	</uninstall>
 </package-info>
