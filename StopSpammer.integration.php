@@ -58,16 +58,16 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
             $email      = $regOptions['email'];
         }
 
-        stopSpammer_stopforumspam_check($spammer, $confidenceThreshold, $ip, $username, $email);
+        stopSpammerStopforumspamCheck($spammer, $confidenceThreshold, $ip, $username, $email);
 
     }
 
     if($modSettings['spamhaus_enabled']) {
-        stopSpammer_spamshaus_check($spammer, $regOptions['ip']);
+        stopSpammerSpamhausCheck($spammer, $regOptions['ip']);
     }
  
     if($modSettings['projecthoneypot_enabled'] && !empty($modSettings['projecthoneypot_key'])) {
-        stopSpammer_projecthoneypot_check($spammer, $modSettings['projecthoneypot_threshold'], $modSettings['projecthoneypot_key'], $regOptions['ip']);
+        stopSpammerProjecthoneypotCheck($spammer, $modSettings['projecthoneypot_threshold'], $modSettings['projecthoneypot_key'], $regOptions['ip']);
     }
     
     if($spammer == true && !empty($modSettings['stopspammer_block_register'])) {            
@@ -177,7 +177,7 @@ function int_profileStopSpammer(&$profile_areas)
     $profile_areas['profile_action']['areas'] = elk_array_insert($profile_areas['profile_action']['areas'], 'banuser', array(
             'checkmember'       => array(
                 'label'         => $txt['stopspammer_check'],
-                'custom_url'    => $scripturl . '?action=stopspammer;sa=check;member_id='.$memID,
+                'custom_url'    => $scripturl . '?action=stopspammer;sa=check;'.$memID,
                 'enabled'       => !empty($modSettings['stopspammer_enabled']),
                 'sc'            => 'get',
                 'permission'    => array(
@@ -222,7 +222,7 @@ function int_listStopSpammer(&$listOptions)
 
     // Override the default call so we can add the is_spammer check to the returned values
     $listOptions['get_items']['file']       = SUBSDIR . '/StopSpammer.subs.php';
-    $listOptions['get_items']['function']   = 'stopSpammer_getMembers';
+    $listOptions['get_items']['function']   = 'stopSpammerGetMembers';
 }
 
 /**

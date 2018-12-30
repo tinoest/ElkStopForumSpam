@@ -41,7 +41,7 @@ function stopSpammerStopforumspamCheck(&$spammer, $confidenceThreshold = null, $
     }
 
     // Nothing was set?
-    if($noChecks) {
+    if($noCheck) {
         return $spammer;
     }
 
@@ -49,7 +49,6 @@ function stopSpammerStopforumspamCheck(&$spammer, $confidenceThreshold = null, $
 
     $result	= fetch_web_data($url.$data);
     $result = json_decode($result, true);
-
     if ( is_array($result) && $result['success'] === 1 ) {
         if ( ( $result['ip']['appears'] === 1 )  && ( $result['ip']['confidence'] > $confidenceThreshold ) ) {
             $spammer = true;
@@ -92,7 +91,7 @@ function stopSpammerProjecthoneypotCheck(&$spammer, $confidenceThreshold = null,
     }
 
     if(!empty($ip)) {
-        $results = explode( ".", gethostbyname($modSettings['projecthoneypot_key'].".".implode(".", array_reverse(explode(".", $ip))).".dnsbl.httpbl.org" ) ); 
+        $results = explode( ".", gethostbyname($key.".".implode(".", array_reverse(explode(".", $ip))).".dnsbl.httpbl.org" ) ); 
         if ($results != null && count($results) && isset($results[0]['ip'])) {
             $results = explode('.', $results[0]['ip']);
             if ($results[0] == 127) {
@@ -118,8 +117,7 @@ function stopSpammerProjecthoneypotCheck(&$spammer, $confidenceThreshold = null,
                 }
             }
         }
-    }   
-
+    }
 }
     
 function stopSpammerGetMembers($start, $items_per_page, $sort, $where, $where_params = array(), $get_duplicates = false) 
