@@ -21,7 +21,6 @@
 		<require-file name="StopSpammer.subs.php" destination="SUBSDIR" />
 		<require-file name="StopSpammer.controller.php" destination="CONTROLLERDIR" />
 		<require-file name="StopSpammer.english.php" destination="LANGUAGEDIR/english">The language strings</require-file>
-		<hook hook="integrate_memberlist_buttons" file="SOURCEDIR/StopSpammer.integration.php" function="int_memberListStopSpammer" />
 		<hook hook="integrate_actions" file="SOURCEDIR/StopSpammer.integration.php" function="int_actionsStopSpammer" />
 		<hook hook="integrate_load_member_data" file="SOURCEDIR/StopSpammer.integration.php" function="int_loadMemberDataStopSpammer" />
 		<hook hook="integrate_member_context" file="SOURCEDIR/StopSpammer.integration.php" function="int_memberContextStopSpammer" />
@@ -35,7 +34,6 @@
 	</install>
 
 	<uninstall for="1.1 - 1.1.99">
-		<hook reverse="true" hook="integrate_memberlist_buttons" file="SOURCEDIR/StopSpammer.integration.php" function="int_memberListStopSpammer" />
 		<hook reverse="true" hook="integrate_load_member_data" file="SOURCEDIR/StopSpammer.integration.php" function="int_loadMemberDataStopSpammer" />
 		<hook reverse="true" hook="integrate_member_context" file="SOURCEDIR/StopSpammer.integration.php" function="int_memberContextStopSpammer" />
 		<hook reverse="true" hook="integrate_register_check" file="SOURCEDIR/StopSpammer.integration.php" function="int_stopSpammer" />

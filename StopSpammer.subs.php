@@ -152,11 +152,62 @@ function stopSpammerGetMembers($start, $items_per_page, $sort, $where, $where_pa
 
 function stopSpammerCheckUser($user_id)
 {
+    global $modSettings;
+
+    $db     = database();
+
+    $temp   = array();
+    $result = $db->query('','
+        SELECT id_member AS id, member_name AS username, email_address AS email, member_ip AS ip
+        FROM {db_prefix}members
+        WHERE id_member = {int:user_id}',
+        array (
+            'user_id' => $user_id,
+        )
+    );
+
+    $user   = $db->fetch_assoc($result);
+    $db->free_result($result);
+
+    $spammer = false;
+    
+    if($modSettings['stopforumspam_enabled']) {
+        if(isset($modSettings['stopforumspam_threshold'])) {
+            $confidenceThreshold = $modSettings['stopforumspam_threshold'];
+        }
+        else {
+            $confidenceThreshold = 50;
+        }
+        stopSpammerStopforumspamCheck($spammer, $confidenceThreshold, $user['ip'], $user['username'], $user['email']);
+    }
+
+    if($modSettings['spamhaus_enabled']) {
+        stopSpammerSpamhausCheck($spammer, $user['ip']);
+    }
+ 
+    if($modSettings['projecthoneypot_enabled'] && !empty($modSettings['projecthoneypot_key'])) {
+        stopSpammerProjecthoneypotCheck($spammer, $modSettings['projecthoneypot_threshold'], $modSettings['projecthoneypot_key'], $user['ip']);
+    }
+
+    $db->query('', '
+        UPDATE {db_prefix}members
+        SET is_spammer = {int:spammer}
+        WHERE id_member = {int:id_member}',
+        array (
+            'spammer'	=> (int)$spammer,
+            'id_member'	=> $user['id'],
+        )
+    );
+
+}
+
+
+function stopSpammerReportUser($user_id)
+{
 
     // Retrieve user information?
 
 
 }
-
 
 ?>

@@ -6,7 +6,8 @@ $txt['stopspammer_enabled']             = 'Enable the Anti Spam Addon';
 $txt['stopspammer_enabled_desc']        = 'Enable a set of Anti Spam Measures on Registration';
 $txt['stopspammer_desc']                = 'This addon adds the Stop Spammer check on registration.';
 $txt['stopspammer_block_register']      = 'Block Registration to the forum if detected as a Spammer';
-$txt['stopspammer_check']               = 'Check user is a spammer';
+$txt['stopspammer_check']               = 'Check if user is a spammer';
+$txt['stopspammer_report']              = 'Report user as a spammer';
 
     
 $txt['stopforumspam_enabled']           = 'Enable the Anti Spam Addon';
@@ -19,6 +20,7 @@ $txt['stopforumspam_ip_check']          = 'Check the IP?';
 $txt['stopforumspam_email_check']       = 'Check the email address?';
 $txt['stopforumspam_username_check']    = 'Check the username?';
 $txt['stopforumspam_threshold']         = 'Threshold level for Spammer Detection';
+$txt['stopforumspam_key']               = '<strong>Stop Forum Spam</strong> API Key';
 
 $txt['spamhaus_options']                = 'Spamhaus Options';
 $txt['spamhaus_enabled']                = 'Enable the <strong>Spamhaus</strong> check';

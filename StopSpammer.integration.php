@@ -29,7 +29,7 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
     if(empty($modSettings['stopspammer_enabled'])) {
         return;
     }
-    
+   
     require_once(SUBSDIR . '/StopSpammer.subs.php');
     
     $spammer = false;
@@ -189,6 +189,23 @@ function int_profileStopSpammer(&$profile_areas)
         'after'
     );
 
+    if(!empty($modSettings['stopforumspam_key'])) {
+        $profile_areas['profile_action']['areas'] = elk_array_insert($profile_areas['profile_action']['areas'], 'checkmember', array(
+                'reportmember'       => array(
+                    'label'         => $txt['stopspammer_report'],
+                    'custom_url'    => $scripturl . '?action=stopspammer;sa=report;'.$memID,
+                    'enabled'       => !empty($modSettings['stopspammer_enabled']),
+                    'sc'            => 'get',
+                    'permission'    => array(
+                        'own'   => array('profile_remove_any', 'profile_remove_own'),
+                        'any'   => array('profile_remove_any', 'moderate_forum'),
+                    ),
+                )
+            ), 
+            'after'
+        );
+    }
+
 }
 
 
@@ -247,6 +264,7 @@ function stopspammer_settings()
 		array('check', 'stopforumspam_ip_check'),
 		array('check', 'stopforumspam_email_check'),
 		array('check', 'stopforumspam_username_check'),
+		array('text', 'stopforumspam_key'),
 		array('int', 'stopforumspam_threshold'),
 		array('title', 'spamhaus_options'),
 		array('check', 'spamhaus_enabled', 'postinput' => $txt['spamhaus_enabled_desc']),
@@ -272,23 +290,6 @@ function stopspammer_settings()
 	Settings_Form::prepare_db($config_vars);
 }
 
-function int_memberListStopSpammer()
-{
-	global $context;
-
-	if(allowedTo('admin_forum')) {
-		$context['columns']['is_spammer'] = array ( 
-			'label' 		=> 'Spammer' , 
-			'class'			=> 'is_spammer',
-			'default_sort_rev' 	=> 'true',
-			'sort'			=> array ( 
-				'down' 	=> 'mem.is_spammer DESC',
-				'up'	=> 'mem.is_spammer ASC'
-			),
-		);
-	}
-}
-
 function int_loadMemberDataStopSpammer(&$select_columns, &$select_tables, $set)
 {
 	if(allowedTo('admin_forum')) {
@@ -299,6 +300,7 @@ function int_loadMemberDataStopSpammer(&$select_columns, &$select_tables, $set)
 function int_memberContextStopSpammer($user, $custom_fields)
 {
 	global $memberContext, $user_profile;
+
 
 	if(allowedTo('admin_forum')) {
 		if($user_profile[$user]['is_spammer'] == 0) {

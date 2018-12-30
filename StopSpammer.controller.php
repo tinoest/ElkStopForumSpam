@@ -23,6 +23,7 @@ class StopSpammer_Controller extends Action_Controller
 		$subActions = array(
 			'index'		=> array($this, 'action_check'),
 			'check' 	=> array($this, 'action_check'),
+			'report' 	=> array($this, 'action_report'),
 		);
 
 		// We like action, so lets get ready for some
@@ -47,5 +48,17 @@ class StopSpammer_Controller extends Action_Controller
 
         redirectexit('action=admin;area=viewmembers;');
 	}
+
+
+    public function action_report()
+    {
+		require_once(SUBSDIR . '/StopSpammer.subs.php');
+
+        if(array_key_exists('u', $_GET)) {
+            stopSpammerReportUser($_GET['u']);
+            redirectexit('action=profile;u='.$_GET['u']);
+        }
+
+    }
 	
 }
