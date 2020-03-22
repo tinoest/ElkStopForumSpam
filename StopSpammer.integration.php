@@ -21,7 +21,7 @@ if (!defined('ELK'))
  */
 function int_stopSpammer(&$regOptions, &$reg_errors)
 {
-	global $modSettings;
+		global $modSettings, $txt;
         
     $regOptions['spammer'] = 0;
     
@@ -46,15 +46,15 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
             $confidenceThreshold = 50;
         }
 
-        if(!empty($modSettings['stopforumspam_ip_check'])) {
+        if(isset($modSettings['stopforumspam_ip_check'])) {
             $ip         = $regOptions['ip'];
         }
 
-        if(!empty($modSettings['stopforumspam_username_check'])) {
+        if(isset($modSettings['stopforumspam_username_check'])) {
             $username   = $regOptions['username'];
         }
 
-        if(!empty($modSettings['stopforumspam_email_check'])) {
+        if(isset($modSettings['stopforumspam_email_check'])) {
             $email      = $regOptions['email'];
         }
 
@@ -66,18 +66,18 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
         stopSpammerSpamhausCheck($spammer, $regOptions['ip']);
     }
  
-    if($modSettings['projecthoneypot_enabled'] && !empty($modSettings['projecthoneypot_key'])) {
+    if($modSettings['projecthoneypot_enabled'] && isset($modSettings['projecthoneypot_key'])) {
         stopSpammerProjecthoneypotCheck($spammer, $modSettings['projecthoneypot_threshold'], $modSettings['projecthoneypot_key'], $regOptions['ip']);
     }
     
-    if($spammer == true && !empty($modSettings['stopspammer_block_register'])) {
-        if(!empty($modSettings['stopspammer_log_spammer'])) {
+    if($spammer == true && isset($modSettings['stopspammer_block_register'])) {
+        if(isset($modSettings['stopspammer_log_spammer'])) {
 	        Errors::instance()->log_error(sprintf($txt['stopspammer_user_blocked'], $ip, $username, $email), 'general', __FILE__, __LINE__);
         }
         $reg_errors->addError('not_guests');
     }
     else {
-        if(!empty($modSettings['stopspammer_log_spammer'])) {
+        if(isset($modSettings['stopspammer_log_spammer'])) {
 	        Errors::instance()->log_error(sprintf($txt['stopspammer_user_awaiting'], $ip, $username, $email), 'general', __FILE__, __LINE__);
         }
         $regOptions['spammer']              = 1;
