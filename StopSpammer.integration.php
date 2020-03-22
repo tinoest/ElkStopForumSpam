@@ -70,10 +70,16 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
         stopSpammerProjecthoneypotCheck($spammer, $modSettings['projecthoneypot_threshold'], $modSettings['projecthoneypot_key'], $regOptions['ip']);
     }
     
-    if($spammer == true && !empty($modSettings['stopspammer_block_register'])) {            
+    if($spammer == true && !empty($modSettings['stopspammer_block_register'])) {
+        if(!empty($modSettings['stopspammer_log_spammer'])) {
+	        Errors::instance()->log_error(sprintf($txt['stopspammer_user_blocked'], $ip, $username, $email), 'general', __FILE__, __LINE__);
+        }
         $reg_errors->addError('not_guests');
     }
     else {
+        if(!empty($modSettings['stopspammer_log_spammer'])) {
+	        Errors::instance()->log_error(sprintf($txt['stopspammer_user_awaiting'], $ip, $username, $email), 'general', __FILE__, __LINE__);
+        }
         $regOptions['spammer']              = 1;
         $regOptions['require']              = 'approval';
         $modSettings['registration_method'] = 2;
@@ -259,6 +265,7 @@ function stopspammer_settings()
 	$config_vars = array(
 		array('check', 'stopspammer_enabled', 'postinput' => $txt['stopspammer_enabled_desc']),
 		array('check', 'stopspammer_block_register'),
+		array('check', 'stopspammer_log_spammer'),
 		array('title', 'stopforumspam_options'),
 		array('check', 'stopforumspam_enabled', 'postinput' => $txt['stopforumspam_enabled_desc']),
 		array('check', 'stopforumspam_ip_check'),

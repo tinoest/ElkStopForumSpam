@@ -4,10 +4,13 @@
 $txt['stopspammer_title']               = 'Stop Spammer';
 $txt['stopspammer_enabled']             = 'Enable the Anti Spam Addon';
 $txt['stopspammer_enabled_desc']        = 'Enable a set of Anti Spam Measures on Registration';
+$txt['stopspammer_log_spammer']         = 'Log failed registration attempts in the error log';
 $txt['stopspammer_desc']                = 'This addon adds the Stop Spammer check on registration.';
 $txt['stopspammer_block_register']      = 'Block Registration to the forum if detected as a Spammer';
 $txt['stopspammer_check']               = 'Check if user is a spammer';
 $txt['stopspammer_report']              = 'Report user as a spammer';
+$txt['stopspammer_user_blocked']        = 'Blocked User with IP: %s, Username: %s and Email: %s from Registering';
+$txt['stopspammer_user_awaiting']       = 'User with IP: %s, Username: %s and Email: %s Awaiting Approval';
 
     
 $txt['stopforumspam_enabled']           = 'Enable the Anti Spam Addon';
