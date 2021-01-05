@@ -50,14 +50,10 @@ function stopSpammerStopforumspamCheck(&$spammer, $confidenceThreshold = null, $
     $result	= fetch_web_data($url.$data);
     $result = json_decode($result, true);
     if ( is_array($result) && $result['success'] === 1 ) {
-        if ( ( $result['ip']['appears'] === 1 )  && ( $result['ip']['confidence'] > $confidenceThreshold ) ) {
-            $spammer = true;
-        }
-        if ( ( $result['username']['appears'] === 1 )  && ( $result['username']['confidence'] > $confidenceThreshold ) ) {
-            $spammer = true;
-        }
-        if ( ( $result['email']['appears'] === 1 )  && ( $result['email']['confidence'] > $confidenceThreshold ) ) {
-            $spammer = true;
+        foreach(array('ip', 'username', 'email') as $check) {
+            if(array_key_exists($check, $result) && (($result[$check]['appears'] === 1)  && ($result[$check]['confidence'] > $confidenceThreshold))) {
+                $spammer = true;
+            }
         }
     }
 
@@ -72,8 +68,10 @@ function stopSpammerSpamhausCheck(&$spammer, $ip = null)
         $dns    = dns_get_record($revip . ".zen.spamhaus.org");
         if ($dns != null && count($dns) > 0) {
             foreach ($dns as $entry) {
-                if (in_array($entry['ip'], array('127.0.0.2', '127.0.0.3', '127.0.0.4'))) {
-                    $spammer = true;
+                if(array_key_exists('ip', $entry)) {
+                    if (in_array($entry['ip'], array('127.0.0.2', '127.0.0.3', '127.0.0.4'))) {
+                        $spammer = true;
+                    }
                 }
             }
         }
