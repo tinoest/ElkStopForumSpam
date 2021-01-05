@@ -11,6 +11,7 @@ $txt['stopspammer_check']               = 'Check if user is a spammer';
 $txt['stopspammer_report']              = 'Report user as a spammer';
 $txt['stopspammer_user_blocked']        = 'Blocked User with IP: %s, Username: %s and Email: %s from Registering';
 $txt['stopspammer_user_awaiting']       = 'User with IP: %s, Username: %s and Email: %s Awaiting Approval';
+$txt['stopspammer_settings']            = 'StopSpammer Settings';
 
     
 $txt['stopforumspam_enabled']           = 'Enable the Anti Spam Addon';

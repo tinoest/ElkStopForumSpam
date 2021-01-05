@@ -3,7 +3,7 @@
 <package-info xmlns="http://www.elkarte.net/site/package-info" xmlns:elk="http://www.elkarte.net/">
 	<id>tinoest:ElkStopSpammer</id>
 	<name>Elkarte Stop Spammer</name>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<type>addon</type>
 	<license><![CDATA[
 /**

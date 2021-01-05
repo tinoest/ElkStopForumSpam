@@ -21,8 +21,10 @@ if (!defined('ELK'))
  */
 function int_stopSpammer(&$regOptions, &$reg_errors)
 {
-		global $modSettings, $txt;
+	global $modSettings, $txt;
         
+	loadLanguage('StopSpammer');
+
     $regOptions['spammer'] = 0;
     
     // No point running if disabled
@@ -34,7 +36,7 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
     
     $spammer = false;
 
-    if($modSettings['stopforumspam_enabled']) {
+    if(isset($modSettings['stopforumspam_enabled']) && $modSettings['stopforumspam_enabled']) {
         $ip         = null;
         $username   = null; 
         $email      = null;
@@ -62,11 +64,11 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
 
     }
 
-    if($modSettings['spamhaus_enabled']) {
+    if(isset($modSettings['spamhaus_enabled']) && $modSettings['spamhaus_enabled']) {
         stopSpammerSpamhausCheck($spammer, $regOptions['ip']);
     }
  
-    if($modSettings['projecthoneypot_enabled'] && isset($modSettings['projecthoneypot_key'])) {
+    if((isset($modSettings['projecthoneypot_enabled']) && $modSettings['projecthoneypot_enabled']) && isset($modSettings['projecthoneypot_key'])) {
         stopSpammerProjecthoneypotCheck($spammer, $modSettings['projecthoneypot_threshold'], $modSettings['projecthoneypot_key'], $regOptions['ip']);
     }
     
