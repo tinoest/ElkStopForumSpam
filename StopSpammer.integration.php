@@ -33,13 +33,17 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
     }
    
     require_once(SUBSDIR . '/StopSpammer.subs.php');
-    
-    $spammer = false;
+
+	$ip			= isset($regOptions['ip']) ? $regOptions['ip'] : null;
+	$username   = isset($regOptions['username']) ? $regOptions['username'] : null;
+	$email		= isset($regOptions['email']) ? $regOptions['email'] : null;
+
+    $spammer	= false;
 
     if(isset($modSettings['stopforumspam_enabled']) && $modSettings['stopforumspam_enabled']) {
-        $ip         = null;
-        $username   = null; 
-        $email      = null;
+		$check_ip		= null;
+		$check_user		= null;
+		$check_email	= null;
 
         if(isset($modSettings['stopforumspam_threshold'])) {
             $confidenceThreshold = $modSettings['stopforumspam_threshold'];
@@ -49,27 +53,27 @@ function int_stopSpammer(&$regOptions, &$reg_errors)
         }
 
         if(isset($modSettings['stopforumspam_ip_check'])) {
-            $ip         = $regOptions['ip'];
+            $check_ip	    = $ip;
         }
 
         if(isset($modSettings['stopforumspam_username_check'])) {
-            $username   = $regOptions['username'];
+            $check_user	    = $username;
         }
 
         if(isset($modSettings['stopforumspam_email_check'])) {
-            $email      = $regOptions['email'];
+            $check_email    = $email;
         }
 
-        stopSpammerStopforumspamCheck($spammer, $confidenceThreshold, $ip, $username, $email);
+        stopSpammerStopforumspamCheck($spammer, $confidenceThreshold, $check_ip, $check_user, $check_email);
 
     }
 
     if(isset($modSettings['spamhaus_enabled']) && $modSettings['spamhaus_enabled']) {
-        stopSpammerSpamhausCheck($spammer, $regOptions['ip']);
+        stopSpammerSpamhausCheck($spammer, $ip);
     }
  
     if((isset($modSettings['projecthoneypot_enabled']) && $modSettings['projecthoneypot_enabled']) && isset($modSettings['projecthoneypot_key'])) {
-        stopSpammerProjecthoneypotCheck($spammer, $modSettings['projecthoneypot_threshold'], $modSettings['projecthoneypot_key'], $regOptions['ip']);
+        stopSpammerProjecthoneypotCheck($spammer, $modSettings['projecthoneypot_threshold'], $modSettings['projecthoneypot_key'], $ip);
     }
     
     if($spammer == true && isset($modSettings['stopspammer_block_register'])) {
